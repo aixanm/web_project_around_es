@@ -28,3 +28,52 @@ const initialCards = [
 initialCards.forEach(function (card) {
   console.log(card.name);
 });
+
+// --- Selección de elementos ---
+const profileEditButton = document.querySelector(".profile__edit-button");
+const editModal = document.querySelector("#edit-popup");
+const editModalCloseBtn = editModal.querySelector(".popup__close");
+const editForm = editModal.querySelector("#edit-profile-form");
+
+const profileNameEl = document.querySelector(".profile__title");
+const profileDescriptionEl = document.querySelector(".profile__description");
+
+const nameInput = editModal.querySelector(".popup__input_type_name");
+const descriptionInput = editModal.querySelector(
+  ".popup__input_type_description",
+);
+
+// --- 1. Abrir y cerrar el modal ---
+function openModal(modal) {
+  modal.classList.add("popup_is-opened");
+}
+
+function closeModal(modal) {
+  modal.classList.remove("popup_is-opened");
+}
+
+// --- 2. Rellenar el formulario ---
+function fillProfileForm() {
+  nameInput.value = profileNameEl.textContent;
+  descriptionInput.value = profileDescriptionEl.textContent;
+}
+
+function handleOpenEditModal() {
+  fillProfileForm();
+  openModal(editModal);
+}
+
+profileEditButton.addEventListener("click", handleOpenEditModal);
+editModalCloseBtn.addEventListener("click", () => closeModal(editModal));
+
+// --- 3. Editar nombre y descripción al enviar el formulario ---
+function handleProfileFormSubmit(evt) {
+  evt.preventDefault();
+
+  profileNameEl.textContent = nameInput.value;
+  profileDescriptionEl.textContent = descriptionInput.value;
+
+  closeModal(editModal);
+}
+
+editForm.addEventListener("submit", handleProfileFormSubmit);
