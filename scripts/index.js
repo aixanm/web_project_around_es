@@ -1,3 +1,9 @@
+import {
+  setEventListeners,
+  resetValidation,
+  validationConfig,
+} from "./validate.js";
+
 const initialCards = [
   {
     name: "Valle de Yosemite",
@@ -64,14 +70,37 @@ const cardTemplate = document
   .querySelector("#card-template")
   .content.querySelector(".card");
 
+// --- Cerrar con Esc ---
+function handleEscClose(evt) {
+  if (evt.key === "Escape") {
+    const openedPopup = document.querySelector(".popup_is-opened");
+    if (openedPopup) {
+      closeModal(openedPopup);
+    }
+  }
+}
+
+// --- Cerrar al hacer clic en la superposición ---
+function handleOverlayClick(evt) {
+  if (evt.target === evt.currentTarget) {
+    closeModal(evt.currentTarget);
+  }
+}
+
 // --- Abrir y cerrar modales (funciones reutilizables y genéricas) ---
 function openModal(modal) {
   modal.classList.add("popup_is-opened");
+  document.addEventListener("keydown", handleEscClose);
 }
 
 function closeModal(modal) {
   modal.classList.remove("popup_is-opened");
+  document.removeEventListener("keydown", handleEscClose);
 }
+
+document.querySelectorAll(".popup").forEach((popup) => {
+  popup.addEventListener("click", handleOverlayClick);
+});
 
 // --- Perfil: rellenar formulario ---
 function fillProfileForm() {
@@ -81,6 +110,7 @@ function fillProfileForm() {
 
 function handleOpenEditModal() {
   fillProfileForm();
+  resetValidation(editProfileForm, validationConfig);
   openModal(editModal);
 }
 
@@ -132,6 +162,7 @@ initialCards.forEach((card) => {
 
 // --- Agregar nuevas tarjetas ---
 function handleAddCardClick() {
+  resetValidation(newCardForm, validationConfig);
   openModal(newCardModal);
 }
 
@@ -171,3 +202,6 @@ function handleCardImageClick(name, link) {
 }
 
 imageModalCloseButton.addEventListener("click", () => closeModal(imageModal));
+
+// --- Validación de formularios ---
+setEventListeners(validationConfig);

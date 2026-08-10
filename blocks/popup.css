@@ -104,7 +104,8 @@
 
 .popup__image {
   max-width: 100%;
-  object-fit: cover;
+  max-height: 100%;
+  object-fit: contain;
 }
 
 .popup__caption {
@@ -156,4 +157,24 @@
     max-width: 75vw;
     padding: 0;
   }
+}
+
+.popup__input-error {
+  display: block;
+  min-height: 22px;
+  margin-top: 4px;
+  font-family: "Inter", sans-serif;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 100%;
+  color: #ff0000;
+}
+
+.popup__input_type_error {
+  border-bottom: 2px solid #ff0000;
+}
+
+.popup__button_disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
 }
