@@ -3,14 +3,16 @@
 ## Descripción del proyecto
 
 Around The U.S. es una galería de fotografías interactiva desarrollada como
-proyecto de los Sprints 6 y 7 del bootcamp de Desarrollo Web de TripleTen. El
-sitio permite a los usuarios personalizar su perfil, gestionar una colección
-de tarjetas de fotografías de distintos lugares del mundo, y valida los
-formularios en tiempo real para mejorar la experiencia de usuario.
+proyecto de los Sprints 6, 7 y 8 del bootcamp de Desarrollo Web de TripleTen.
+El sitio permite a los usuarios personalizar su perfil, gestionar una
+colección de tarjetas de fotografías de distintos lugares del mundo, y valida
+los formularios en tiempo real para mejorar la experiencia de usuario.
 
-El proyecto se centró en la manipulación del DOM con JavaScript puro,
-trabajando con eventos, plantillas HTML, renderizado dinámico de contenido,
-validación de formularios y JavaScript modular.
+En el Sprint 8, el proyecto se refactorizó por completo aplicando
+Programación Orientada a Objetos (POO) e integrando TypeScript, migrando la
+lógica que antes vivía en funciones globales hacia clases independientes,
+tipadas y reutilizables, con una arquitectura modular organizada en
+`components`, `types` y `utils`.
 
 ## Funcionalidad
 
@@ -34,10 +36,19 @@ validación de formularios y JavaScript modular.
 
 - HTML5 semántico
 - CSS3 (metodología BEM para la nomenclatura de clases)
-- JavaScript (Vanilla JS), con módulos ES (`import`/`export`)
+- TypeScript, con tipado estático, interfaces, genéricos y modificadores de
+  acceso (`private`/`protected`/`public`)
+- Programación Orientada a Objetos: encapsulación, herencia y polimorfismo,
+  aplicados mediante una jerarquía de clases (`Popup` → `PopupWithImage` /
+  `PopupWithForm`) y clases independientes con responsabilidad única
+  (`Card`, `Section`, `FormValidator`, `UserInfo`)
+- Arquitectura modular con módulos ES (`import`/`export`), separada en
+  `components`, `types` y `utils`
 - Manipulación del DOM y delegación de eventos
 - Plantillas HTML (`<template>`) para la generación dinámica de contenido
 - Validación de formularios con la API nativa `ValidityState`
+- Compilación de TypeScript a JavaScript mediante `tsc`, con `src` como
+  carpeta de código fuente y `public` como carpeta de salida
 - Git y GitHub para control de versiones
 - Despliegue mediante GitHub Pages
 
