@@ -1,10 +1,10 @@
-import { FormValidator } from "../components/FormValidator.js";
-import { defaultFormConfig } from "../utils/constants.js";
-import { Card } from "../components/Card.js";
-import { Section } from "../components/Section.js";
-import { PopupWithImage } from "../components/PopupWithImage.js";
-import { PopupWithForm } from "../components/PopupWithForm.js";
-import { UserInfo } from "../components/UserInfo.js";
+import { FormValidator } from "./components/FormValidator.js";
+import { defaultFormConfig } from "./utils/constants.js";
+import { Card } from "./components/Card.js";
+import { Section } from "./components/Section.js";
+import { PopupWithImage } from "./components/PopupWithImage.js";
+import { PopupWithForm } from "./components/PopupWithForm.js";
+import { UserInfo } from "./components/UserInfo.js";
 const initialCards = [
     {
         name: "Valle de Yosemite",
