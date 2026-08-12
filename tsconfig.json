@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "rootDir": "./src",
-    "outDir": "./docs",
+    "outDir": "./public",
     "allowJs": true,
     "module": "es6",
     "target": "es2016",
