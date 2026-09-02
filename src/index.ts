@@ -4,37 +4,21 @@ import { Card } from "./components/Card.js";
 import { Section } from "./components/Section.js";
 import { PopupWithImage } from "./components/PopupWithImage.js";
 import { PopupWithForm } from "./components/PopupWithForm.js";
+import { PopupWithConfirmation } from "./components/PopupWithConfirmation.js";
 import { UserInfo } from "./components/UserInfo.js";
+import { Api } from "./components/Api.js";
 import type { CardData } from "./types/types.js";
 
-const initialCards: CardData[] = [
-  {
-    name: "Valle de Yosemite",
-    link: "https://practicum-content.s3.us-west-1.amazonaws.com/web-code/moved_yosemite.jpg",
+const api = new Api({
+  baseUrl: "https://around-api.es.tripleten-services.com/v1",
+  headers: {
+    authorization: "cdb73c64-40c2-4f87-abc0-e2446e7144b4",
+    "Content-Type": "application/json",
   },
-  {
-    name: "Lago Louise",
-    link: "https://practicum-content.s3.us-west-1.amazonaws.com/web-code/moved_lake-louise.jpg",
-  },
-  {
-    name: "Montañas Calvas",
-    link: "https://practicum-content.s3.us-west-1.amazonaws.com/web-code/moved_bald-mountains.jpg",
-  },
-  {
-    name: "Latemar",
-    link: "https://practicum-content.s3.us-west-1.amazonaws.com/web-code/moved_latemar.jpg",
-  },
-  {
-    name: "Parque Nacional de la Vanoise",
-    link: "https://practicum-content.s3.us-west-1.amazonaws.com/web-code/moved_vanoise.jpg",
-  },
-  {
-    name: "Lago di Braies",
-    link: "https://practicum-content.s3.us-west-1.amazonaws.com/web-code/moved_lago.jpg",
-  },
-];
+});
 
-// --- Selección de elementos: perfil ---
+let currentUserId = "";
+
 const profileEditButton = document.querySelector(
   ".profile__edit-button",
 ) as HTMLButtonElement;
@@ -49,7 +33,6 @@ const descriptionInput = document.querySelector(
   ".popup__input_type_description",
 ) as HTMLInputElement;
 
-// --- Selección de elementos: agregar tarjeta ---
 const addCardButton = document.querySelector(
   ".profile__add-button",
 ) as HTMLButtonElement;
@@ -57,43 +40,122 @@ const newCardForm = document.querySelector(
   "#new-card-form",
 ) as HTMLFormElement;
 
-// --- Información del usuario ---
+const profileImage = document.querySelector(
+  ".profile__image",
+) as HTMLImageElement;
+const avatarEditButton = document.querySelector(
+  ".profile__avatar-edit-button",
+) as HTMLButtonElement;
+const avatarForm = document.querySelector("#avatar-form") as HTMLFormElement;
+
 const userInfo = new UserInfo({
   nameSelector: ".profile__title",
   descriptionSelector: ".profile__description",
 });
 
-// --- Validación de formularios ---
 const editFormValidator = new FormValidator(defaultFormConfig, editProfileForm);
 editFormValidator.enableValidation();
 
 const newCardFormValidator = new FormValidator(defaultFormConfig, newCardForm);
 newCardFormValidator.enableValidation();
 
-// --- Popups ---
+const avatarFormValidator = new FormValidator(defaultFormConfig, avatarForm);
+avatarFormValidator.enableValidation();
+
 const imagePopup = new PopupWithImage("#image-popup");
 imagePopup.setEventListeners();
 
-function handleProfileFormSubmit(formData: Record<string, string>): void {
-  userInfo.setUserInfo({
-    name: formData.name,
-    description: formData.description,
+const deleteConfirmPopup = new PopupWithConfirmation("#confirm-delete-popup");
+deleteConfirmPopup.setEventListeners();
+
+function handleCardImageClick(name: string, link: string): void {
+  imagePopup.open({ name, link });
+}
+
+function handleDeleteClick(cardId: string, onSuccess: () => void): void {
+  deleteConfirmPopup.setConfirmAction(async () => {
+    try {
+      await api.deleteCard(cardId);
+      onSuccess();
+      deleteConfirmPopup.close();
+    } catch (err) {
+      console.error(err);
+    }
   });
-  editFormPopup.close();
+  deleteConfirmPopup.open();
+}
+
+async function handleLikeClick(
+  cardId: string,
+  isLiked: boolean,
+): Promise<CardData> {
+  return api.changeLikeCardStatus(cardId, isLiked);
+}
+
+function createCard(data: CardData): HTMLElement {
+  const card = new Card(
+    data,
+    "#card-template",
+    currentUserId,
+    handleCardImageClick,
+    handleDeleteClick,
+    handleLikeClick,
+  );
+  return card.generateCard();
+}
+
+const cardSection = new Section<CardData>(
+  {
+    items: [],
+    renderer: (item) => {
+      const cardElement = createCard(item);
+      cardSection.addItem(cardElement);
+    },
+  },
+  ".cards__list",
+);
+
+async function handleProfileFormSubmit(
+  formData: Record<string, string>,
+): Promise<void> {
+  editFormPopup.setSubmitButtonText("Guardando...");
+  try {
+    const updatedUser = await api.editUserInfo({
+      name: formData.name.trim(),
+      about: formData.description.trim(),
+    });
+    userInfo.setUserInfo({
+      name: updatedUser.name,
+      description: updatedUser.about,
+    });
+    editFormPopup.close();
+  } catch (err) {
+    console.error(err);
+  } finally {
+    editFormPopup.resetSubmitButtonText();
+  }
 }
 
 const editFormPopup = new PopupWithForm("#edit-popup", handleProfileFormSubmit);
 editFormPopup.setEventListeners();
 
-function handleCardFormSubmit(formData: Record<string, string>): void {
-  const newCardData: CardData = {
-    name: formData["place-name"],
-    link: formData.link,
-  };
-  const card = new Card(newCardData, "#card-template", handleCardImageClick);
-  const cardElement = card.generateCard();
-  cardSection.addItem(cardElement);
-  newCardFormPopup.close();
+async function handleCardFormSubmit(
+  formData: Record<string, string>,
+): Promise<void> {
+  newCardFormPopup.setSubmitButtonText("Guardando...");
+  try {
+    const newCardData = await api.addCard({
+      name: formData["place-name"].trim(),
+      link: formData.link.trim(),
+    });
+    const cardElement = createCard(newCardData);
+    cardSection.addItem(cardElement);
+    newCardFormPopup.close();
+  } catch (err) {
+    console.error(err);
+  } finally {
+    newCardFormPopup.resetSubmitButtonText();
+  }
 }
 
 const newCardFormPopup = new PopupWithForm(
@@ -102,7 +164,31 @@ const newCardFormPopup = new PopupWithForm(
 );
 newCardFormPopup.setEventListeners();
 
-// --- Perfil: abrir modal de edición ---
+async function handleAvatarFormSubmit(
+  formData: Record<string, string>,
+): Promise<void> {
+  avatarPopup.setSubmitButtonText("Guardando...");
+  try {
+    const updatedUser = await api.updateAvatar({
+      avatar: formData.avatar.trim(),
+    });
+    profileImage.src = updatedUser.avatar;
+    avatarPopup.close();
+  } catch (err) {
+    console.error(err);
+  } finally {
+    avatarPopup.resetSubmitButtonText();
+  }
+}
+
+const avatarPopup = new PopupWithForm("#avatar-popup", handleAvatarFormSubmit);
+avatarPopup.setEventListeners();
+
+avatarEditButton.addEventListener("click", () => {
+  avatarFormValidator.resetValidation();
+  avatarPopup.open();
+});
+
 function fillProfileForm(): void {
   const currentUserInfo = userInfo.getUserInfo();
   nameInput.value = currentUserInfo.name;
@@ -117,30 +203,32 @@ function handleOpenEditModal(): void {
 
 profileEditButton.addEventListener("click", handleOpenEditModal);
 
-// --- Ampliar imagen ---
-function handleCardImageClick(name: string, link: string): void {
-  imagePopup.open({ name, link });
-}
-
-// --- Tarjetas: crear y renderizar ---
-const cardSection = new Section<CardData>(
-  {
-    items: initialCards,
-    renderer: (item) => {
-      const card = new Card(item, "#card-template", handleCardImageClick);
-      const cardElement = card.generateCard();
-      cardSection.addItem(cardElement);
-    },
-  },
-  ".cards__list",
-);
-
-cardSection.renderItems();
-
-// --- Agregar nuevas tarjetas ---
 function handleAddCardClick(): void {
   newCardFormValidator.resetValidation();
   newCardFormPopup.open();
 }
 
 addCardButton.addEventListener("click", handleAddCardClick);
+
+async function loadInitialData(): Promise<void> {
+  try {
+    const [userData, initialCards] = await Promise.all([
+      api.getUserInfo(),
+      api.getInitialCards(),
+    ]);
+
+    currentUserId = userData._id;
+
+    userInfo.setUserInfo({
+      name: userData.name,
+      description: userData.about,
+    });
+    profileImage.src = userData.avatar;
+
+    cardSection.renderItems(initialCards);
+  } catch (err) {
+    console.error("Fallo al cargar datos iniciales:", err);
+  }
+}
+
+loadInitialData();

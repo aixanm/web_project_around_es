@@ -18,7 +18,14 @@ export class Section<T> {
     this.container.prepend(element);
   }
 
-  public renderItems(): void {
+  public setItems(items: T[]): void {
+    this.items = items;
+  }
+
+  public renderItems(items?: T[]): void {
+    if (items) {
+      this.items = items;
+    }
     this.items.forEach((item) => {
       this.renderer(item);
     });
